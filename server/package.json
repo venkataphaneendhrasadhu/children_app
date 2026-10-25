@@ -1,0 +1,20 @@
+{
+  "name": "nutrition-children-server",
+  "version": "1.0.0",
+  "description": "Node.js + PostgreSQL (Render) API for FamilyPlate Nutrition & Diabetes App",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db:init": "node src/db/init.js",
+    "verify": "node src/verifySample.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
+    "pg": "^8.13.3"
+  }
+}
