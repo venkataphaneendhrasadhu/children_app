@@ -1,9 +1,20 @@
-import { Platform } from "react-native";
+import { Platform, NativeModules } from "react-native";
 
-// Automatically selects the right local host for Android emulator, iOS simulator, or Web,
-// or uses EXPO_PUBLIC_API_URL when deployed to Render.
-const DEFAULT_HOST =
-  Platform.OS === "android" ? "http://10.0.2.2:4001" : "http://127.0.0.1:4001";
+// Automatically selects the right host for:
+// 1. Real Android phone over Wi-Fi LAN (192.168.0.38:4001)
+// 2. Real Android phone via USB adb-reverse (127.0.0.1:4001)
+// 3. Local web / simulator / emulator
+function resolveDefaultHost() {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location?.hostname) {
+    const host = window.location.hostname === "localhost" ? "127.0.0.1" : window.location.hostname;
+    return `http://${host}:4001`;
+  }
+
+  return Platform.OS === "android" ? "http://192.168.0.38:4001" : "http://127.0.0.1:4001";
+}
+
+const DEFAULT_HOST = resolveDefaultHost();
+const USB_FALLBACK_URL = "http://127.0.0.1:4001/api";
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || `${DEFAULT_HOST}/api`;
@@ -16,11 +27,21 @@ async function request(path, { method = "GET", body, token } = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkErr) {
+    // Fallback to USB adb-reverse localhost if on a different Wi-Fi
+    response = await fetch(`${USB_FALLBACK_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {

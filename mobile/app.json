@@ -12,12 +12,15 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.jayashhre.familyplate",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#070B16"
       }
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ]
   }
 }

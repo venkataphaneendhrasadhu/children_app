@@ -1,4 +1,6 @@
 require("dotenv").config();
+const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 const { pool } = require("./db/pool");
@@ -37,6 +39,23 @@ app.use("/api/auth", authRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/meals", mealRoutes);
 app.use("/api/diabetes", diabetesRoutes);
+
+// Direct Android APK download endpoint so users can install FamilyPlate.apk directly on their phone
+app.get("/download/FamilyPlate.apk", (_req, res) => {
+  const releaseApk = path.resolve(
+    __dirname,
+    "../../mobile/android/app/build/outputs/apk/release/app-release.apk"
+  );
+  const debugApk = path.resolve(
+    __dirname,
+    "../../mobile/android/app/build/outputs/apk/debug/app-debug.apk"
+  );
+  const apkPath = fs.existsSync(releaseApk) ? releaseApk : debugApk;
+  if (!fs.existsSync(apkPath)) {
+    return res.status(404).send("APK is still building, please try again in a moment.");
+  }
+  res.download(apkPath, "FamilyPlate-Nutrition.apk");
+});
 
 initializeDatabase().finally(() => {
   app.listen(PORT, "0.0.0.0", () => {

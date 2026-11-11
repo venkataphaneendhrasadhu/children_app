@@ -5,3 +5,7 @@ web-build/
 .env
 *.log
 .DS_Store
+*.apk
+*.aab
+mobile/android/
+mobile/ios/
